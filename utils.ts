@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-function generateToken(id) {
+export function generateToken(id) {
     const access_token = jwt.sign({ id: id }, "lkasjdflkjlkasdfhhnkwenhranf", {
         expiresIn: 15
     })
@@ -9,5 +9,3 @@ function generateToken(id) {
 
     return { access_token, refresh_token }
 }
-
-generateToken("123")

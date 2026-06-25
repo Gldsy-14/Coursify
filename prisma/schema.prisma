@@ -13,11 +13,12 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
-  name     String
-  email    String @unique
-  password String
-  role     String
+  id            String  @id @default(uuid())
+  name          String
+  email         String  @unique
+  password      String
+  role          String
+  refresh_token String?
 
   student Student?
   staff   Staff?

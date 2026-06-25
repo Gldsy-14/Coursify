@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import bcrypt from 'bcryptjs';
 import { prisma } from './db'
+import { generateToken } from './utils';
 
 const app = express();
 
@@ -15,14 +16,14 @@ const database = [];
  * pass: asdf
  * }
  */
+
+
 app.post("/auth/register", async function (req, res) {
   const { username, useremail, pass, userrole } = req.body;
 
   const passwordHash = await bcrypt.hash(pass, 10)
 
-  console.log(passwordHash)
-
-  await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
       name: username,
       email: useremail,
@@ -30,9 +31,20 @@ app.post("/auth/register", async function (req, res) {
       role: userrole,
     },
   });
+  const { access_token, refresh_token } = generateToken(user?.id)
+  await prisma.user.update({
+    where: {
+      id: user?.id,
+    },
+    data: {
+      refresh_token: refresh_token
+    }
+  })
 
-  res.send("user stored");
+  res.send(access_token);
 });
+
+// Token rotation
 
 app.post('/auth/login', async function (req, res) {
   const { useremail, pass } = req.body;
@@ -45,7 +57,19 @@ app.post('/auth/login', async function (req, res) {
   if (!isPasswordMatched) {
     return res.send("User not found | Invalid password")
   }
-  res.json(user)
+  const { access_token, refresh_token } = generateToken(user?.id)
+
+  await prisma.user.update({
+    where: {
+      id: user?.id || "",
+    },
+    data: {
+      refresh_token: refresh_token
+    }
+  })
+
+
+  res.send(access_token)
 })
 
 
