@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import bcrypt from 'bcryptjs';
 import { prisma } from './db'
 
 const app = express();
@@ -17,11 +18,15 @@ const database = [];
 app.post("/auth/register", async function (req, res) {
   const { username, useremail, pass, userrole } = req.body;
 
+  const passwordHash = await bcrypt.hash(pass, 10)
+
+  console.log(passwordHash)
+
   await prisma.user.create({
     data: {
       name: username,
       email: useremail,
-      password: pass,
+      password: passwordHash,
       role: userrole,
     },
   });
@@ -36,27 +41,34 @@ app.post('/auth/login', async function (req, res) {
       email: useremail
     }
   })
-  if (user?.password !== pass) {
+  const isPasswordMatched = await bcrypt.compare(pass, user?.password)
+  if (!isPasswordMatched) {
     return res.send("User not found | Invalid password")
   }
   res.json(user)
 })
 
-app.post('/user/update/:id', async function (req, res) {
-  const { useremail, pass } = req.body;
-  const user = await prisma.user.update({
-    where: {
-      id: req.params.id
-    },
-    data: {
-      email: useremail
-    }
-  })
-  if (user?.password !== pass) {
-    return res.send("User not found | Invalid password")
-  }
-  res.json(user)
-})
+
+
+
+// $2b$10$9NvcmldHaQN2bFelT0tMbOmxE8wqbr.ApCKhUx5WlKBx3PbACtFeq
+
+
+// app.post('/user/update/:id', async function (req, res) {
+//   const { useremail, pass } = req.body;
+//   const user = await prisma.user.update({
+//     where: {
+//       id: req.params.id
+//     },
+//     data: {
+//       email: useremail
+//     }
+//   })
+//   if (user?.password !== pass) {
+//     return res.send("User not found | Invalid password")
+//   }
+//   res.json(user)
+// })
 
 
 app.listen(3000, function () {
