@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken"
 export function generateToken(id) {
-    const access_token = jwt.sign({ id: id }, "lkasjdflkjlkasdfhhnkwenhranf", {
+    const access_token = jwt.sign({ id: id, role: "Admin" }, "lkasjdflkjlkasdfhhnkwenhranf", {
         expiresIn: "15m"
     })
     const refresh_token = jwt.sign({ id: id }, "jlkhjwaeurjkaldfjlkjalsdjfj", {
